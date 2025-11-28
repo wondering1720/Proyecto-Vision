@@ -1,6 +1,5 @@
 import cv2
 import mediapipe as mp
-import numpy as np
 from ultralytics import YOLO
 
 class Detector:
@@ -10,24 +9,22 @@ class Detector:
         print("Modelo cargado.")
 
     def detectar_trampas(self, frame):
-        # Solo buscamos celulares (clase 67 en COCO dataset)
-        results = self.model(frame, stream=True, classes=[67], verbose=False)
+        # Solo buscamos celulares (clase 67)
+        results = self.model(frame, stream=True, classes=[1], verbose=False)
 
         celular_detectado = False
         alerta = ""
-
+        
+        # deteccion de celular
         for r in results:
             boxes = r.boxes
             for box in boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 confianza = float(box.conf[0])
-
-                # CASO CELULAR
                 if confianza > 0.4:
                     celular_detectado = True
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    cv2.putText(frame, "CELULAR", (x1, y1 - 10), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    cv2.putText(frame, "CELULAR", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
         es_sospechoso = False
         if celular_detectado:
@@ -50,7 +47,6 @@ class DetectorMirada:
         alto, ancho, _ = frame.shape
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.face_mesh.process(rgb_frame)
-
         estado = "Desconocido"
         
         if results.multi_face_landmarks:
@@ -78,14 +74,14 @@ class DetectorMirada:
                 if dist_nariz_barbilla == 0: dist_nariz_barbilla = 0.001
                 ratio_v = dist_nariz_frente / dist_nariz_barbilla
 
-                # Umbrales (ajustar según pruebas de iluminación/cámara)
+                # Umbrales
                 if ratio_h < 0.4:
                     estado = "Izquierda"
                 elif ratio_h > 2.5:
                     estado = "Derecha"
                 elif ratio_v < 0.6: # Nariz muy cerca de la frente
                     estado = "Arriba"
-                elif ratio_v > 1.8: # Nariz muy cerca de la barbilla (visualmente)
+                elif ratio_v > 1.8: # Nariz muy cerca de la barbilla
                     estado = "Abajo"
                 else:
                     estado = "Centro"

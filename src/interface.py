@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import  messagebox
 import cv2
 from PIL import Image, ImageTk
 import datetime
@@ -10,14 +10,14 @@ class ProctorApp:
         self.window = window
         self.window.title(window_title)
         
-        # 1. Configuración de la Cámara y Detectores
+        # Configuración de la Cámara y Detectores
         self.cap = cv2.VideoCapture(0)
         self.detector_trampas = Detector()
         self.detector_mirada = DetectorMirada()
         
-        # 2. Variables de Estado
+        # Variables de Estado
         self.examen_activo = False
-        self.ventana_activa = True # Asumimos que empieza con foco
+        self.ventana_activa = True
         
         self.stats = {
             "tiempo_total": 0,       # Frames totales del examen
